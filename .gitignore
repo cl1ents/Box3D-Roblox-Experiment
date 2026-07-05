@@ -1,3 +1,8 @@
 .direnv/
 build-wasm/
 result
+
+/*.rbxl
+/*.rbxl.lock
+/*.rbxlx
+/*.rbxlx.lock
