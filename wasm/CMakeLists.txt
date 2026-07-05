@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 3.22)
+
+project(box3d_wasm LANGUAGES C CXX)
+
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(BOX3D_SAMPLES OFF CACHE BOOL "" FORCE)
+set(BOX3D_UNIT_TESTS OFF CACHE BOOL "" FORCE)
+set(BOX3D_BENCHMARKS OFF CACHE BOOL "" FORCE)
+set(BOX3D_VALIDATE OFF CACHE BOOL "" FORCE)
+set(BOX3D_DISABLE_SIMD ON CACHE BOOL "" FORCE)
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../box3d ${CMAKE_CURRENT_BINARY_DIR}/box3d)
+
+add_executable(box3d_wasm box3d_bridge.c)
+target_link_libraries(box3d_wasm PRIVATE box3d::box3d)
+target_compile_features(box3d_wasm PRIVATE c_std_17)
+
+if(EMSCRIPTEN)
+  set_target_properties(box3d_wasm PROPERTIES SUFFIX ".wasm")
+  target_link_options(box3d_wasm PRIVATE
+    "--no-entry"
+    "-sSTANDALONE_WASM=1"
+    "-sALLOW_MEMORY_GROWTH=1"
+    "-sEXPORTED_FUNCTIONS=['_malloc','_free','_b3d_create_world','_b3d_destroy_world','_b3d_step','_b3d_create_body','_b3d_destroy_body','_b3d_create_sphere','_b3d_create_capsule','_b3d_create_box','_b3d_destroy_shape','_b3d_get_body_transform','_b3d_set_body_transform','_b3d_get_body_linear_velocity','_b3d_set_body_linear_velocity']"
+  )
+endif()

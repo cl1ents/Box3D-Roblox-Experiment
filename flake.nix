@@ -60,8 +60,10 @@
             packages = with pkgs; [
               cargo
               cmake
+              emscripten
               git
               ninja
+              nodejs
               pkg-config
               rustc
               spider-cli
