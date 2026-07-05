@@ -2,6 +2,8 @@
 
 Box3D compiled to WebAssembly, then translated with [Spider](https://github.com/SovereignSatellite/Spider) for Luau/LuaJIT experiments.
 
+Initial Nix, wasm bridge, Spider build scripts, and Rojo example were generated with OpenAI GPT-5.5 via OpenCode.
+
 ## Setup
 
 This repo uses Nix flakes and direnv.
