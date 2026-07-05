@@ -31,8 +31,7 @@ The dev shell includes:
 ## Build Wasm
 
 ```sh
-emcmake cmake -S wasm -B build-wasm -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build-wasm
+scripts/build-wasm.sh
 ```
 
 Output:
@@ -46,7 +45,7 @@ The wasm build uses `wasm/CMakeLists.txt` as a wrapper around the upstream `box3
 ## Compile To Luau
 
 ```sh
-spider-cli compile -t luau build-wasm/box3d_wasm.wasm > build-wasm/box3d.luau
+scripts/build-luau.sh
 ```
 
 Output:
@@ -54,6 +53,20 @@ Output:
 ```sh
 build-wasm/box3d.luau
 ```
+
+`scripts/build-luau.sh` appends `return rt_export_map` so Rojo can mount the generated Luau as a `ModuleScript`.
+
+## Rojo Example
+
+`default.project.json` maps `build-wasm/box3d.luau` directly into `ReplicatedStorage.Box3D`.
+
+```sh
+scripts/build-wasm.sh
+scripts/build-luau.sh
+rojo serve
+```
+
+Open Roblox Studio with the Rojo plugin, connect to the server, and press Play. The server script creates a Box3D world, steps a falling sphere, and mirrors the transform onto an anchored Roblox ball.
 
 ## Wasm ABI
 

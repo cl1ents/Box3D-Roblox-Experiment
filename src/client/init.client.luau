@@ -1,1 +1,1 @@
-print("Hello world, from client!")
+print("Box3D Rojo example synced")
