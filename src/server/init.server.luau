@@ -3,6 +3,8 @@ local RunService = game:GetService("RunService")
 
 local Box3D = require(ReplicatedStorage:WaitForChild("Box3D"))
 
+task.wait(5)
+
 Box3D._initialize()
 
 local memory = Box3D.memory[1]

@@ -6,8 +6,7 @@
 #include <stdlib.h>
 
 #ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#define B3D_EXPORT EMSCRIPTEN_KEEPALIVE
+#define B3D_EXPORT
 #else
 #define B3D_EXPORT
 #endif

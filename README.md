@@ -44,6 +44,8 @@ build-wasm/box3d_wasm.wasm
 
 The wasm build uses `wasm/CMakeLists.txt` as a wrapper around the upstream `box3d` submodule. This avoids Box3D's top-level Emscripten pthread setup and produces a single-thread standalone wasm module.
 
+Default build exports only the functions used by the Rojo demo so Emscripten LTO and wasm GC can strip unused bridge paths. To keep the full bridge API, configure with `-DBOX3D_WASM_FULL_API=ON` before building.
+
 ## Compile To Luau
 
 ```sh
@@ -80,18 +82,21 @@ Body types:
 - `1`: kinematic
 - `2`: dynamic
 
-Exported functions:
+Default exported functions:
 
 - `b3d_create_world(gravity_x, gravity_y, gravity_z) -> world_handle`
-- `b3d_destroy_world(world_handle)`
 - `b3d_step(world_handle, time_step, sub_step_count)`
 - `b3d_create_body(world_handle, body_type, x, y, z, qx, qy, qz, qw) -> body_handle`
-- `b3d_destroy_body(body_handle)`
 - `b3d_create_sphere(body_handle, radius, density, friction, restitution) -> shape_handle`
-- `b3d_create_capsule(body_handle, ax, ay, az, bx, by, bz, radius, density, friction, restitution) -> shape_handle`
 - `b3d_create_box(body_handle, hx, hy, hz, density, friction, restitution) -> shape_handle`
-- `b3d_destroy_shape(shape_handle)`
 - `b3d_get_body_transform(body_handle, out_ptr)` writes 7 floats: `x, y, z, qx, qy, qz, qw`
+
+Extra functions with `BOX3D_WASM_FULL_API=ON`:
+
+- `b3d_destroy_world(world_handle)`
+- `b3d_destroy_body(body_handle)`
+- `b3d_create_capsule(body_handle, ax, ay, az, bx, by, bz, radius, density, friction, restitution) -> shape_handle`
+- `b3d_destroy_shape(shape_handle)`
 - `b3d_set_body_transform(body_handle, x, y, z, qx, qy, qz, qw)`
 - `b3d_get_body_linear_velocity(body_handle, out_ptr)` writes 3 floats: `x, y, z`
 - `b3d_set_body_linear_velocity(body_handle, x, y, z)`
