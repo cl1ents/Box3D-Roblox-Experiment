@@ -5,6 +5,9 @@
 
     "ReplicatedStorage": {
       "Box3D": {
+        "$path": "src/Box3D.luau"
+      },
+      "Box3DWasm": {
         "$path": "build-wasm/box3d.luau"
       },
       "Shared": {

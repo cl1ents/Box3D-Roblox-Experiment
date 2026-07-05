@@ -58,11 +58,16 @@ Output:
 build-wasm/box3d.luau
 ```
 
-`scripts/build-luau.sh` appends `return rt_export_map` so Rojo can mount the generated Luau as a `ModuleScript`.
+`scripts/build-luau.sh` keeps generated Spider code raw except for Spider-output corrections and a small runtime export table. Roblox-facing adapters live in normal source files.
 
 ## Rojo Example
 
-`default.project.json` maps `build-wasm/box3d.luau` directly into `ReplicatedStorage.Box3D`.
+`default.project.json` maps generated Spider output to `ReplicatedStorage.Box3DWasm` and the typed Roblox wrapper to `ReplicatedStorage.Box3D`.
+
+Wrapper modules:
+
+- `src/shared/Box3DAdapter.luau`: low-level Spider closure/import adapter.
+- `src/Box3D.luau`: typed Roblox API returning handle objects, `Vector3`, and `CFrame`.
 
 ```sh
 scripts/build-wasm.sh
