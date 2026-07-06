@@ -62,12 +62,13 @@ build-wasm/box3d.luau
 
 ## Rojo Example
 
-`default.project.json` maps generated Spider output to `ReplicatedStorage.Box3DWasm` and the typed Roblox wrapper to `ReplicatedStorage.Box3D`.
+`default.project.json` maps generated Spider output to `ReplicatedStorage.Box3DWasm` and the typed Roblox wrapper to `ReplicatedStorage.Shared.Box3D`.
 
 Wrapper modules:
 
-- `src/shared/Box3DAdapter.luau`: low-level Spider closure/import adapter.
-- `src/Box3D.luau`: typed Roblox API returning handle objects, `Vector3`, and `CFrame`.
+- `src/shared/Box3D/Internal/Adapter.luau`: low-level Spider closure/import adapter.
+- `src/shared/Box3D/init.luau`: typed Roblox API entrypoint returning handle objects, `Vector3`, and `CFrame`.
+- `src/shared/Box3D/{World,Body,Shape,Math,Types}.luau`: focused API modules loaded by the entrypoint.
 
 ```sh
 scripts/build-wasm.sh
