@@ -16,11 +16,11 @@ target_link_libraries(box3d_wasm PRIVATE box3d::box3d)
 target_compile_features(box3d_wasm PRIVATE c_std_17)
 
 if(EMSCRIPTEN)
-  option(BOX3D_WASM_FULL_API "Export the full bridge API instead of just the Rojo demo API" OFF)
-
-  set(BOX3D_WASM_EXPORTED_FUNCTIONS "['_b3d_create_world','_b3d_step','_b3d_create_body','_b3d_create_sphere','_b3d_create_box','_b3d_get_body_transform']")
-  if(BOX3D_WASM_FULL_API)
-    set(BOX3D_WASM_EXPORTED_FUNCTIONS "['_malloc','_free','_b3d_create_world','_b3d_destroy_world','_b3d_step','_b3d_create_body','_b3d_destroy_body','_b3d_create_sphere','_b3d_create_capsule','_b3d_create_box','_b3d_destroy_shape','_b3d_get_body_transform','_b3d_set_body_transform','_b3d_get_body_linear_velocity','_b3d_set_body_linear_velocity']")
+  set(BOX3D_WASM_EXPORTS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../build-wasm/box3d_exports.cmake")
+  if(EXISTS "${BOX3D_WASM_EXPORTS_FILE}")
+    include("${BOX3D_WASM_EXPORTS_FILE}")
+  else()
+    set(BOX3D_WASM_EXPORTED_FUNCTIONS "['_b3d_create_world','_b3d_step','_b3d_create_body','_b3d_create_sphere','_b3d_create_box','_b3d_get_body_transform']")
   endif()
 
   target_compile_options(box3d PRIVATE -Oz -flto -ffunction-sections -fdata-sections)

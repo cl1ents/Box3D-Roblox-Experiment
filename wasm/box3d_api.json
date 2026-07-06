@@ -1,0 +1,196 @@
+{
+  "documentationTopics": [
+    "Base",
+    "World",
+    "Recording",
+    "Body",
+    "Shape",
+    "Joint",
+    "ParallelJoint",
+    "DistanceJoint",
+    "MotorJoint",
+    "FilterJoint",
+    "PrismaticJoint",
+    "RevoluteJoint",
+    "SphericalJoint",
+    "WeldJoint",
+    "WheelJoint",
+    "Contact",
+    "Ids",
+    "Math",
+    "Events",
+    "Query",
+    "DynamicTree",
+    "CharacterMover",
+    "Geometry",
+    "Sphere",
+    "Capsule",
+    "ConvexHull",
+    "TriangleMesh",
+    "HeightField",
+    "Compound",
+    "ShapeCollision",
+    "DebugDraw"
+  ],
+  "profiles": {
+    "demo": [
+      "b3d_create_world",
+      "b3d_step",
+      "b3d_create_body",
+      "b3d_create_sphere",
+      "b3d_create_box",
+      "b3d_get_body_transform"
+    ],
+    "full": ["*"]
+  },
+  "functions": [
+    {
+      "name": "malloc",
+      "wasm": "_malloc",
+      "group": "memory",
+      "args": ["size"],
+      "returns": "ptr",
+      "publicName": "malloc",
+      "reason": "memory allocation helper"
+    },
+    {
+      "name": "free",
+      "wasm": "_free",
+      "group": "memory",
+      "args": ["ptr"],
+      "returns": "void",
+      "publicName": "free",
+      "reason": "memory allocation helper"
+    },
+    {
+      "name": "b3d_create_world",
+      "wasm": "_b3d_create_world",
+      "group": "world",
+      "args": ["gravityX", "gravityY", "gravityZ"],
+      "returns": "worldHandle",
+      "upstream": ["b3DefaultWorldDef", "b3CreateWorld"],
+      "publicName": "World.create",
+      "reason": "create simulation worlds"
+    },
+    {
+      "name": "b3d_destroy_world",
+      "wasm": "_b3d_destroy_world",
+      "group": "world",
+      "args": ["worldHandle"],
+      "returns": "void",
+      "upstream": ["b3DestroyWorld"],
+      "publicName": "World.destroy",
+      "reason": "destroy simulation worlds"
+    },
+    {
+      "name": "b3d_step",
+      "wasm": "_b3d_step",
+      "group": "world",
+      "args": ["worldHandle", "timeStep", "subStepCount"],
+      "returns": "void",
+      "upstream": ["b3World_Step"],
+      "publicName": "World.step",
+      "reason": "advance simulation worlds"
+    },
+    {
+      "name": "b3d_create_body",
+      "wasm": "_b3d_create_body",
+      "group": "body",
+      "args": ["worldHandle", "bodyType", "x", "y", "z", "qx", "qy", "qz", "qw"],
+      "returns": "bodyHandle",
+      "upstream": ["b3DefaultBodyDef", "b3CreateBody"],
+      "publicName": "Body.create",
+      "reason": "create rigid bodies"
+    },
+    {
+      "name": "b3d_destroy_body",
+      "wasm": "_b3d_destroy_body",
+      "group": "body",
+      "args": ["bodyHandle"],
+      "returns": "void",
+      "upstream": ["b3DestroyBody"],
+      "publicName": "Body.destroy",
+      "reason": "destroy rigid bodies"
+    },
+    {
+      "name": "b3d_create_sphere",
+      "wasm": "_b3d_create_sphere",
+      "group": "shape",
+      "args": ["bodyHandle", "radius", "density", "friction", "restitution"],
+      "returns": "shapeHandle",
+      "upstream": ["b3DefaultShapeDef", "b3CreateSphereShape"],
+      "publicName": "Shape.createSphere",
+      "reason": "create sphere shapes"
+    },
+    {
+      "name": "b3d_create_capsule",
+      "wasm": "_b3d_create_capsule",
+      "group": "shape",
+      "args": ["bodyHandle", "ax", "ay", "az", "bx", "by", "bz", "radius", "density", "friction", "restitution"],
+      "returns": "shapeHandle",
+      "upstream": ["b3DefaultShapeDef", "b3CreateCapsuleShape"],
+      "publicName": "Shape.createCapsule",
+      "reason": "create capsule shapes"
+    },
+    {
+      "name": "b3d_create_box",
+      "wasm": "_b3d_create_box",
+      "group": "shape",
+      "args": ["bodyHandle", "hx", "hy", "hz", "density", "friction", "restitution"],
+      "returns": "shapeHandle",
+      "upstream": ["b3DefaultShapeDef", "b3MakeBoxHull", "b3CreateHullShape"],
+      "publicName": "Shape.createBox",
+      "reason": "create box shapes"
+    },
+    {
+      "name": "b3d_destroy_shape",
+      "wasm": "_b3d_destroy_shape",
+      "group": "shape",
+      "args": ["shapeHandle"],
+      "returns": "void",
+      "upstream": ["b3DestroyShape"],
+      "publicName": "Shape.destroy",
+      "reason": "destroy shapes"
+    },
+    {
+      "name": "b3d_get_body_transform",
+      "wasm": "_b3d_get_body_transform",
+      "group": "body",
+      "args": ["bodyHandle", "outTransform"],
+      "returns": "void",
+      "upstream": ["b3Body_GetTransform"],
+      "publicName": "Body.getCFrame",
+      "reason": "read body transforms"
+    },
+    {
+      "name": "b3d_set_body_transform",
+      "wasm": "_b3d_set_body_transform",
+      "group": "body",
+      "args": ["bodyHandle", "x", "y", "z", "qx", "qy", "qz", "qw"],
+      "returns": "void",
+      "upstream": ["b3Body_SetTransform"],
+      "publicName": "Body.setCFrame",
+      "reason": "write body transforms"
+    },
+    {
+      "name": "b3d_get_body_linear_velocity",
+      "wasm": "_b3d_get_body_linear_velocity",
+      "group": "body",
+      "args": ["bodyHandle", "outVelocity"],
+      "returns": "void",
+      "upstream": ["b3Body_GetLinearVelocity"],
+      "publicName": "Body.getLinearVelocity",
+      "reason": "read body linear velocity"
+    },
+    {
+      "name": "b3d_set_body_linear_velocity",
+      "wasm": "_b3d_set_body_linear_velocity",
+      "group": "body",
+      "args": ["bodyHandle", "x", "y", "z"],
+      "returns": "void",
+      "upstream": ["b3Body_SetLinearVelocity"],
+      "publicName": "Body.setLinearVelocity",
+      "reason": "write body linear velocity"
+    }
+  ]
+}

@@ -44,7 +44,23 @@ build-wasm/box3d_wasm.wasm
 
 The wasm build uses `wasm/CMakeLists.txt` as a wrapper around the upstream `box3d` submodule. This avoids Box3D's top-level Emscripten pthread setup and produces a single-thread standalone wasm module.
 
-Default build exports only the functions used by the Rojo demo so Emscripten LTO and wasm GC can strip unused bridge paths. To keep the full bridge API, configure with `-DBOX3D_WASM_FULL_API=ON` before building.
+Default build exports only the functions used by the Rojo demo so Emscripten LTO and wasm GC can strip unused bridge paths. The exported API surface is generated from `wasm/box3d_api.json` before CMake runs.
+
+The wasm build also writes API coverage reports from upstream Box3D headers:
+
+- `build-wasm/box3d_api_coverage.json`: machine-readable status for every `B3_API` symbol.
+- `build-wasm/box3d_api_coverage.md`: readable topic summary and unmapped API list.
+
+Run `python3 scripts/generate-api-coverage.py --check` when intentionally enforcing that every upstream API has an implemented, omitted, unsupported, callback, or file-IO decision.
+
+API profile controls:
+
+- `BOX3D_WASM_API_PROFILE=demo scripts/build-wasm.sh`: demo exports only.
+- `BOX3D_WASM_API_PROFILE=full scripts/build-wasm.sh`: all manifest exports.
+- `BOX3D_WASM_FULL_API=ON scripts/build-wasm.sh`: legacy alias for the full profile.
+- `BOX3D_WASM_OMIT_FUNCTIONS=b3d_destroy_world;b3d_create_capsule scripts/build-wasm.sh`: omit individual bridge exports.
+
+Omitted functions stay visible in the Roblox wrapper where useful, but throw `{name} is not included!` when called.
 
 ## Compile To Luau
 
@@ -67,8 +83,9 @@ build-wasm/box3d.luau
 Wrapper modules:
 
 - `src/shared/Box3D/Internal/Adapter.luau`: low-level Spider closure/import adapter.
+- `src/shared/Box3D/Internal/Omitted.luau`: generated omitted-function metadata.
 - `src/shared/Box3D/init.luau`: typed Roblox API entrypoint returning handle objects, `Vector3`, and `CFrame`.
-- `src/shared/Box3D/{World,Body,Shape,Math,Types}.luau`: focused API modules loaded by the entrypoint.
+- `src/shared/Box3D/{World,Body,Shape,Joint,Query,Events,Collision,Math,Types}.luau`: focused API modules loaded by the entrypoint.
 
 ```sh
 scripts/build-wasm.sh
@@ -97,17 +114,18 @@ Default exported functions:
 - `b3d_create_box(body_handle, hx, hy, hz, density, friction, restitution) -> shape_handle`
 - `b3d_get_body_transform(body_handle, out_ptr)` writes 7 floats: `x, y, z, qx, qy, qz, qw`
 
-Extra functions with `BOX3D_WASM_FULL_API=ON`:
+Extra groups with `BOX3D_WASM_FULL_API=ON`:
 
-- `b3d_destroy_world(world_handle)`
-- `b3d_destroy_body(body_handle)`
-- `b3d_create_capsule(body_handle, ax, ay, az, bx, by, bz, radius, density, friction, restitution) -> shape_handle`
-- `b3d_destroy_shape(shape_handle)`
-- `b3d_set_body_transform(body_handle, x, y, z, qx, qy, qz, qw)`
-- `b3d_get_body_linear_velocity(body_handle, out_ptr)` writes 3 floats: `x, y, z`
-- `b3d_set_body_linear_velocity(body_handle, x, y, z)`
-- `malloc(size) -> ptr`
-- `free(ptr)`
+- World settings, bounds, counters/profile, awake body count, explosion helper.
+- Body validity/type, angular velocity, forces, impulses, damping, gravity scale, sleep/awake, enable/disable, bullet flag, mass data, shape/joint counts, AABB.
+- Shape extended sphere options, capsule/box, validity/type/body/sensor, density/friction/restitution/filter, sensor/contact/hit event flags, AABB, mass data, closest point, ray cast.
+- Joint handles, distance/filter/weld creation, destroy/valid/type/body lookup, constraint force/torque/separation, distance joint spring/limit/motor setters.
+- Query helpers for raycast closest, raycast all, and AABB overlap using C-side result buffers.
+- Event helpers for body move, sensor begin/end, contact begin/end/hit, and joint events.
+- Collision helpers for primitive mass/AABB and ray casts.
+- `malloc(size) -> ptr` and `free(ptr)` for adapter scratch use.
+
+Still intentionally omitted: raw `userData` pointers, arbitrary callback APIs, debug draw callbacks, low-level dynamic tree internals, host filesystem APIs, and mesh/heightfield/compound asset ownership until a Roblox-safe registry is added.
 
 Invalid handles return `0` or write identity/default values.
 

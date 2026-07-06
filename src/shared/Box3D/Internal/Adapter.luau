@@ -1,6 +1,7 @@
 --!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Omitted = require(script.Parent.Omitted)
 
 type Runtime = {
 	module: ({ any }) -> (),
@@ -13,6 +14,7 @@ type Adapter = {
 	memory: { buffer },
 	hasExport: (name: string) -> boolean,
 	_initialize: () -> (),
+	requireExport: (name: string, publicName: string?) -> (),
 	malloc: (size: number) -> number,
 	free: (ptr: number) -> (),
 	b3d_create_world: (gravityX: number, gravityY: number, gravityZ: number) -> number,
@@ -74,17 +76,92 @@ local function getExport(name: string): any?
 	return rawExports[name]
 end
 
+local function missingExport(name: string, publicName: string?)
+	local omitted = Omitted[name]
+	if omitted then
+		error(`{publicName or omitted.publicName or name} is not included!`, 3)
+	end
+
+	error(`Box3D wasm export {name} is unavailable.`, 3)
+end
+
 local function call(name: string, ...): any
 	local export = getExport(name)
 	if not export then
-		error(`Box3D wasm export {name} is unavailable. Rebuild with BOX3D_WASM_FULL_API=ON if this is an optional API.`, 2)
+		missingExport(name, nil)
 	end
+	local callable = export :: any
 
 	local args = table.pack(...)
 	args.n += 1
 	args[args.n] = done
 
-	return export[1](export, table.unpack(args, 1, args.n))
+	return callable[1](callable, table.unpack(args, 1, args.n))
+end
+
+local FLOAT_ARGS: { [string]: { number } } = {
+	b3d_create_world = { 1, 2, 3 },
+	b3d_step = { 2 },
+	b3d_world_set_gravity = { 2, 3, 4 },
+	b3d_world_set_restitution_threshold = { 2 },
+	b3d_world_set_hit_event_threshold = { 2 },
+	b3d_world_set_contact_tuning = { 2, 3, 4 },
+	b3d_world_set_maximum_linear_speed = { 2 },
+	b3d_world_explode = { 2, 3, 4, 5, 6, 7 },
+	b3d_create_body = { 3, 4, 5, 6, 7, 8, 9 },
+	b3d_set_body_transform = { 2, 3, 4, 5, 6, 7, 8 },
+	b3d_set_body_linear_velocity = { 2, 3, 4 },
+	b3d_body_set_angular_velocity = { 2, 3, 4 },
+	b3d_body_apply_force = { 2, 3, 4, 5, 6, 7 },
+	b3d_body_apply_force_to_center = { 2, 3, 4 },
+	b3d_body_apply_torque = { 2, 3, 4 },
+	b3d_body_apply_linear_impulse = { 2, 3, 4, 5, 6, 7 },
+	b3d_body_apply_linear_impulse_to_center = { 2, 3, 4 },
+	b3d_body_apply_angular_impulse = { 2, 3, 4 },
+	b3d_body_set_mass_data = { 2, 3, 4, 5, 6, 7, 8 },
+	b3d_body_set_linear_damping = { 2 },
+	b3d_body_set_angular_damping = { 2 },
+	b3d_body_set_gravity_scale = { 2 },
+	b3d_create_sphere = { 2, 3, 4, 5 },
+	b3d_create_sphere_ex = { 2, 3, 4, 5, 6, 7, 8 },
+	b3d_create_capsule = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 },
+	b3d_create_box = { 2, 3, 4, 5, 6, 7 },
+	b3d_shape_set_density = { 2 },
+	b3d_shape_set_friction = { 2 },
+	b3d_shape_set_restitution = { 2 },
+	b3d_shape_get_closest_point = { 2, 3, 4 },
+	b3d_shape_ray_cast = { 2, 3, 4, 5, 6, 7 },
+	b3d_create_distance_joint = { 4, 5, 6, 7, 8, 9, 10 },
+	b3d_create_weld_joint = { 4, 5, 6, 7, 8, 9 },
+	b3d_distance_joint_set_length = { 2 },
+	b3d_distance_joint_set_spring_hertz = { 2 },
+	b3d_distance_joint_set_spring_damping_ratio = { 2 },
+	b3d_distance_joint_set_length_range = { 2, 3 },
+	b3d_distance_joint_set_motor_speed = { 2 },
+	b3d_distance_joint_set_max_motor_force = { 2 },
+	b3d_world_cast_ray_closest = { 2, 3, 4, 5, 6, 7 },
+	b3d_world_overlap_aabb = { 2, 3, 4, 5, 6, 7 },
+	b3d_world_cast_ray_all = { 2, 3, 4, 5, 6, 7 },
+	b3d_compute_sphere_mass = { 1, 2, 3, 4, 5 },
+	b3d_compute_capsule_mass = { 1, 2, 3, 4, 5, 6, 7, 8 },
+	b3d_compute_sphere_aabb = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 },
+	b3d_is_valid_ray = { 1, 2, 3, 4, 5, 6, 7 },
+	b3d_ray_cast_sphere = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 },
+	b3d_ray_cast_capsule = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 },
+}
+
+local function makeBridgeCall(name: string)
+	local floatArgs = FLOAT_ARGS[name]
+	return function(...)
+		local args = table.pack(...)
+		if floatArgs then
+			for _, index in floatArgs do
+				args[index] = runtime.into_bits_f32(args[index])
+			end
+		end
+
+		return call(name, table.unpack(args, 1, args.n))
+	end
 end
 
 adapter.memory = {} :: { buffer }
@@ -92,6 +169,12 @@ adapter.memory = {} :: { buffer }
 function adapter.hasExport(name: string): boolean
 	ensureInitialized()
 	return rawExports[name] ~= nil
+end
+
+function adapter.requireExport(name: string, publicName: string?)
+	if not adapter.hasExport(name) then
+		missingExport(name, publicName)
+	end
 end
 
 function adapter._initialize()
@@ -158,4 +241,14 @@ adapter.b3d_set_body_linear_velocity = function(bodyHandle: number, x: number, y
 	call("b3d_set_body_linear_velocity", bodyHandle, runtime.into_bits_f32(x), runtime.into_bits_f32(y), runtime.into_bits_f32(z))
 end
 
-return adapter
+return setmetatable(adapter :: any, {
+	__index = function(self, key: string)
+		if string.sub(key, 1, 4) ~= "b3d_" then
+			return nil
+		end
+
+		local fn = makeBridgeCall(key) :: any
+		rawset(self, key, fn)
+		return fn
+	end,
+}) :: Adapter

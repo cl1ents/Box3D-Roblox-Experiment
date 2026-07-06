@@ -65,6 +65,7 @@
               ninja
               nodejs
               pkg-config
+              python3
               rustc
               spider-cli
               stdenv.cc

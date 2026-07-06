@@ -5,6 +5,10 @@ local Types = require(script.Types)
 export type WorldModule = typeof(require(script.World))
 export type BodyModule = typeof(require(script.Body))
 export type ShapeModule = typeof(require(script.Shape))
+export type JointModule = typeof(require(script.Joint))
+export type QueryModule = typeof(require(script.Query))
+export type EventsModule = typeof(require(script.Events))
+export type CollisionModule = typeof(require(script.Collision))
 export type MathModule = typeof(require(script.Math))
 export type TypesModule = typeof(require(script.Types))
 
@@ -23,12 +27,20 @@ export type ShapeOptions = {
 	density: number?,
 	friction: number?,
 	restitution: number?,
+	isSensor: boolean?,
+	categoryBits: number?,
+	maskBits: number?,
+	groupIndex: number?,
 }
 
 export type Box3D = {
 	World: WorldModule,
 	Body: BodyModule,
 	Shape: ShapeModule,
+	Joint: JointModule,
+	Query: QueryModule,
+	Events: EventsModule,
+	Collision: CollisionModule,
 	Math: MathModule,
 	Types: TypesModule,
 	BodyType: typeof(Types.BodyType),
@@ -51,6 +63,10 @@ local modules = {
 	World = script.World,
 	Body = script.Body,
 	Shape = script.Shape,
+	Joint = script.Joint,
+	Query = script.Query,
+	Events = script.Events,
+	Collision = script.Collision,
 	Math = script.Math,
 	Types = script.Types,
 }

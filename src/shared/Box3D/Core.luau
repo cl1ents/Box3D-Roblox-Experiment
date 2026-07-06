@@ -4,7 +4,7 @@ local Adapter = require(script.Parent.Internal.Adapter)
 
 local Core = {}
 
-Core.Adapter = Adapter
+Core.Adapter = Adapter :: any
 
 function Core.memory(): { buffer }
 	Adapter._initialize()
@@ -16,9 +16,7 @@ function Core.hasExport(name: string): boolean
 end
 
 function Core.requireExport(name: string, publicName: string?)
-	if not Adapter.hasExport(name) then
-		error(`Box3D.{publicName or name} requires wasm built with BOX3D_WASM_FULL_API=ON`, 3)
-	end
+	Adapter.requireExport(name, publicName)
 end
 
 function Core.assertHandle(kind: string, handle: number)
